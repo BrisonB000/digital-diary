@@ -26,7 +26,8 @@ window.addEventListener("DOMContentLoaded", () => {
     let emailBox = document.getElementById("email");
 
     emailBox.addEventListener("focus", () => {
-        alert("Enter your registered email ⚡");
+        emailBox.style.border = "2px solid cyan";
+        emailBox.style.boxShadow = "0 0 10px cyan";
     });
 });
 
