@@ -9,6 +9,24 @@
 <h1>IRON DIARY DASHBOARD ⚡</h1>
 
 <p id="today"></p>
+<h2>📅 Calendar</h2>
+
+<div style="display:flex; gap:10px; align-items:center;">
+    <button onclick="changeMonth(-1)">⬅</button>
+    <h3 id="monthYear"></h3>
+    <button onclick="changeMonth(1)">➡</button>
+</div>
+
+<div id="calendar" style="
+    display:grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap:5px;
+    margin-top:10px;
+"></div>
+
+<br>
+
+<input type="date" id="selectedDate">
 
 <textarea id="entry" placeholder="Write your diary..." rows="5" cols="30"></textarea>
 
@@ -46,7 +64,78 @@ setInterval(() => {
     }
 }, 3000);
 
+let currentDate = new Date();
+let diaryMap = {};
 
+async function loadDiaryMap() {
+
+    let { data: userData } = await supabase.auth.getUser();
+    let user = userData.user;
+
+    let { data } = await supabase
+        .from("diary_entries")
+        .select("*")
+        .eq("user_id", user.id);
+
+    diaryMap = {};
+
+    data.forEach(d => {
+        diaryMap[d.entry_date] = d.entry;
+    });
+
+    renderCalendar();
+}
+
+function renderCalendar() {
+
+    let year = currentDate.getFullYear();
+    let month = currentDate.getMonth();
+
+    document.getElementById("monthYear").innerText =
+        currentDate.toLocaleString('default', { month: 'long' }) + " " + year;
+
+    let firstDay = new Date(year, month, 1).getDay();
+    let days = new Date(year, month + 1, 0).getDate();
+
+    let cal = document.getElementById("calendar");
+    cal.innerHTML = "";
+
+    for (let i = 0; i < firstDay; i++) {
+        cal.innerHTML += `<div></div>`;
+    }
+
+    for (let d = 1; d <= days; d++) {
+
+        let dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+
+        let hasEntry = diaryMap[dateStr];
+
+        cal.innerHTML += `
+            <div onclick="selectDate('${dateStr}')"
+                style="padding:10px;
+                text-align:center;
+                border-radius:8px;
+                cursor:pointer;
+                background:${hasEntry ? '#00d9ff' : 'rgba(255,255,255,0.1)'};">
+                ${d}
+                <br>
+                ${hasEntry ? "⚡" : ""}
+            </div>
+        `;
+    }
+}
+
+window.changeMonth = function(val) {
+    currentDate.setMonth(currentDate.getMonth() + val);
+    renderCalendar();
+}
+
+window.selectDate = function(date) {
+    document.getElementById("selectedDate").value = date;
+    loadEntries(date);
+}
+
+loadDiaryMap();
 // =========================
 // iv. COOKIES
 // =========================
@@ -136,9 +225,12 @@ window.saveEntry = async function () {
     let user = userData.user;
 
     let { error } = await supabase.from("diaries").insert([
-        {
-            user_id: user.id,
-            entry: entry
+      {
+    user_id: user.id,
+    entry: entry,
+    entry_date: document.getElementById("selectedDate").value,
+    title: generateAI(entry).title,
+    emoji: generateAI(entry).emoji
         }
     ]);
 
@@ -153,6 +245,22 @@ window.saveEntry = async function () {
     document.getElementById("entry").value = "";
     loadEntries();
 };
+
+function generateAI(text) {
+
+    let title = "Diary Entry";
+    let emoji = "📝";
+
+    let t = text.toLowerCase();
+
+    if (t.includes("happy")) { title="Happy Day"; emoji="😊"; }
+    else if (t.includes("sad")) { title="Sad Day"; emoji="😔"; }
+    else if (t.includes("study")) { title="Study Day"; emoji="📚"; }
+    else if (t.includes("travel")) { title="Travel Day"; emoji="✈️"; }
+    else if (t.includes("game")) { title="Fun Day"; emoji="🎮"; }
+
+    return { title, emoji };
+}
 
 
 // =========================
