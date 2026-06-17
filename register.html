@@ -18,10 +18,70 @@
 <script type="module">
 import { supabase } from './supabase.js';
 
+// =========================
+// REGISTER FUNCTION
+// =========================
 window.register = async function () {
 
     let email = document.getElementById("email").value;
     let password = document.getElementById("password").value;
+
+    // =========================
+    // VALIDATION (PART OF VIII)
+    // =========================
+
+    if (!email || !password) {
+        alert("All fields required");
+        return;
+    }
+
+    if (!email.includes("@")) {
+        alert("Invalid email format");
+        return;
+    }
+
+    if (password.length < 6) {
+        alert("Password must be at least 6 characters");
+        return;
+    }
+
+    if (email.includes(" ")) {
+        alert("Email should not contain spaces");
+        return;
+    }
+
+    if (!email.includes(".")) {
+        alert("Invalid email domain");
+        return;
+    }
+
+    // =========================
+    // PROMPT + CONFIRM (VII)
+    // =========================
+
+    let name = prompt("Enter your name:");
+
+    if (!name) {
+        alert("Name required");
+        return;
+    }
+
+    let ok = confirm("Register account for " + name + "?");
+
+    if (!ok) {
+        alert("Registration cancelled");
+        return;
+    }
+
+    // =========================
+    // RANDOM ID (II)
+    // =========================
+
+    let regID = "IRON-" + Math.floor(100000 + Math.random() * 900000);
+
+    // =========================
+    // SUPABASE REGISTER
+    // =========================
 
     let { error } = await supabase.auth.signUp({
         email,
@@ -33,7 +93,27 @@ window.register = async function () {
         return;
     }
 
-    alert("Registered Successfully");
+    // =========================
+    // COOKIES (IV)
+    // =========================
+
+    document.cookie = "user=" + name;
+    document.cookie = "regID=" + regID;
+
+    // =========================
+    // ALERT OUTPUT
+    // =========================
+
+    alert(
+        "Registration Successful ⚡\n" +
+        "Name: " + name + "\n" +
+        "ID: " + regID
+    );
+
+    // =========================
+    // REDIRECT
+    // =========================
+
     window.location.href = "login.html";
 }
 </script>

@@ -23,22 +23,116 @@
 <script type="module">
 import { supabase } from './supabase.js';
 
-// TODAY DATE
-document.getElementById("today").innerText =
-"Today: " + new Date().toDateString();
 
-// SAVE ENTRY
+// =========================
+// i. CONTENT SLIDER
+// =========================
+
+let tips = [
+    "Write daily to improve memory ⚡",
+    "Your thoughts matter 🧠",
+    "Iron Diary secures your life 🔒"
+];
+
+let i = 0;
+
+setInterval(() => {
+    let todayBox = document.getElementById("today");
+    if (todayBox) {
+        todayBox.innerText =
+            "Today: " + new Date().toDateString() +
+            " | " + tips[i];
+        i = (i + 1) % tips.length;
+    }
+}, 3000);
+
+
+// =========================
+// iv. COOKIES
+// =========================
+
+function setCookie(name, value) {
+    document.cookie = name + "=" + value;
+}
+
+function getCookie(name) {
+    let cookies = document.cookie.split(";");
+    for (let c of cookies) {
+        let [k, v] = c.trim().split("=");
+        if (k === name) return v;
+    }
+    return "";
+}
+
+
+// =========================
+// vi. EVENT (DOM LOADED)
+// =========================
+
+document.addEventListener("DOMContentLoaded", () => {
+    alert("Welcome " + (getCookie("loggedEmail") || "User") + " ⚡");
+});
+
+
+// =========================
+// vii. ALERT / CONFIRM
+// =========================
+
+function confirmSave() {
+    return confirm("Do you want to save this diary entry?");
+}
+
+
+// =========================
+// viii. VALIDATION (5 RULES)
+// =========================
+
+function validateEntry(entry) {
+
+    if (!entry) {
+        alert("Entry is empty");
+        return false;
+    }
+
+    if (entry.length < 5) {
+        alert("Entry too short (min 5 chars)");
+        return false;
+    }
+
+    if (entry.length > 500) {
+        alert("Entry too long");
+        return false;
+    }
+
+    if (entry.includes("<script")) {
+        alert("Invalid content");
+        return false;
+    }
+
+    if (entry.trim() === "") {
+        alert("Only spaces not allowed");
+        return false;
+    }
+
+    return true;
+}
+
+
+// =========================
+// SAVE ENTRY (DOM + SUPABASE)
+// =========================
+
 window.saveEntry = async function () {
 
     let entry = document.getElementById("entry").value;
 
-    if (!entry) {
-        alert("Write something first!");
-        return;
-    }
+    // validation
+    if (!validateEntry(entry)) return;
+
+    // confirm
+    if (!confirmSave()) return;
 
     let { data: userData } = await supabase.auth.getUser();
-
     let user = userData.user;
 
     let { error } = await supabase.from("diaries").insert([
@@ -54,14 +148,20 @@ window.saveEntry = async function () {
     }
 
     alert("Saved ⚡");
-    document.getElementById("entry").value = "";
-}
 
-// LOAD ENTRIES
+    // DOM manipulation
+    document.getElementById("entry").value = "";
+    loadEntries();
+};
+
+
+// =========================
+// LOAD ENTRIES (DYNAMIC UI)
+// =========================
+
 window.loadEntries = async function () {
 
     let { data: userData } = await supabase.auth.getUser();
-
     let user = userData.user;
 
     let { data } = await supabase
@@ -73,12 +173,23 @@ window.loadEntries = async function () {
     let html = "";
 
     data.forEach(d => {
-        html += `<p>⚡ ${d.entry} <br><small>${new Date(d.created_at).toDateString()}</small></p>`;
+        html += `
+            <div style="background:rgba(255,255,255,0.1);
+                        margin:10px;
+                        padding:10px;
+                        border-radius:10px;">
+                ⚡ ${d.entry}
+                <br>
+                <small>${new Date(d.created_at).toDateString()}</small>
+            </div>
+        `;
     });
 
     document.getElementById("list").innerHTML = html;
-}
+};
 
+
+// initial load
 loadEntries();
 </script>
 

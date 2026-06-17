@@ -18,12 +18,73 @@
 <script type="module">
 import { supabase } from './supabase.js';
 
+// =========================
+// EVENT (VI)
+// =========================
+
+window.addEventListener("DOMContentLoaded", () => {
+    let emailBox = document.getElementById("email");
+
+    emailBox.addEventListener("focus", () => {
+        alert("Enter your registered email ⚡");
+    });
+});
+
+
+// =========================
+// LOGIN FUNCTION
+// =========================
+
 window.login = async function () {
 
     let email = document.getElementById("email").value;
     let password = document.getElementById("password").value;
 
-    let { error } = await supabase.auth.signInWithPassword({
+    // =========================
+    // FORM VALIDATION (VIII - 5 RULES)
+    // =========================
+
+    if (!email || !password) {
+        alert("All fields required");
+        return;
+    }
+
+    if (!email.includes("@")) {
+        alert("Invalid email format");
+        return;
+    }
+
+    if (password.length < 6) {
+        alert("Password must be at least 6 characters");
+        return;
+    }
+
+    if (email.includes(" ")) {
+        alert("Email should not contain spaces");
+        return;
+    }
+
+    if (!email.includes(".")) {
+        alert("Invalid email domain");
+        return;
+    }
+
+    // =========================
+    // CONFIRM LOGIN (VII)
+    // =========================
+
+    let ok = confirm("Do you want to login?");
+
+    if (!ok) {
+        alert("Login cancelled");
+        return;
+    }
+
+    // =========================
+    // SUPABASE LOGIN
+    // =========================
+
+    let { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
     });
@@ -33,7 +94,22 @@ window.login = async function () {
         return;
     }
 
-    alert("Login Successful");
+    // =========================
+    // COOKIES (IV)
+    // =========================
+
+    document.cookie = "loggedEmail=" + email;
+
+    // =========================
+    // SUCCESS MESSAGE
+    // =========================
+
+    alert("Login Successful ⚡ Welcome back!");
+
+    // =========================
+    // REDIRECT
+    // =========================
+
     window.location.href = "diary.html";
 }
 </script>

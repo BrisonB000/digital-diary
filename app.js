@@ -1,100 +1,180 @@
-// ---------- SLIDER ----------
+
+// =============================
+// i. CONTENT SLIDER
+// =============================
+
 let messages = [
     "Welcome to Iron Diary ⚡",
-    "Secure your memories like Stark Tech 🧠",
-    "Your private digital vault 🔒"
+    "Secure your memories 🔒",
+    "Your personal digital vault 🧠"
 ];
 
-let i = 0;
+let index = 0;
 
-setInterval(() => {
-    i = (i + 1) % messages.length;
-    document.getElementById("sliderText").innerText = messages[i];
-}, 3000);
-
-
-// ---------- NAVIGATION ----------
-function openLogin() {
-    document.getElementById("loginBox").style.display = "block";
-    document.getElementById("registerBox").style.display = "none";
+function startSlider() {
+    setInterval(() => {
+        index = (index + 1) % messages.length;
+        let slider = document.getElementById("sliderText");
+        if (slider) {
+            slider.innerText = messages[index];
+        }
+    }, 3000);
 }
 
-function openRegister() {
-    document.getElementById("registerBox").style.display = "block";
-    document.getElementById("loginBox").style.display = "none";
+startSlider();
+
+
+// =============================
+// ii. RANDOM NUMBER (REGISTRATION ID)
+// =============================
+
+function generateRegID() {
+    return "IRON-" + Math.floor(100000 + Math.random() * 900000);
 }
 
 
-// ---------- REGISTER ----------
+// =============================
+// iii. DYNAMIC CONTENT DISPLAY
+// =============================
+
+function showMessage(msg) {
+    let box = document.getElementById("dynamicBox");
+
+    if (!box) {
+        box = document.createElement("div");
+        box.id = "dynamicBox";
+        document.body.appendChild(box);
+    }
+
+    box.innerHTML = msg;
+}
+
+
+// =============================
+// iv. COOKIES (SAVE USER)
+// =============================
+
+function setCookie(name, value, days) {
+    let date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
+}
+
+function getCookie(name) {
+    let cookies = document.cookie.split(";");
+    for (let c of cookies) {
+        let [key, val] = c.trim().split("=");
+        if (key === name) return val;
+    }
+    return "";
+}
+
+
+// =============================
+// v. DOM MANIPULATION (DIARY)
+// =============================
+
+function addDiaryEntry() {
+    let text = document.getElementById("diaryText");
+
+    if (!text || text.value.trim() === "") {
+        alert("Write something!");
+        return;
+    }
+
+    let entry = document.createElement("p");
+    entry.innerText = "⚡ " + text.value;
+
+    document.getElementById("entries").appendChild(entry);
+
+    text.value = "";
+}
+
+
+// =============================
+// vi. EVENTS
+// =============================
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    let diaryBox = document.getElementById("diaryText");
+
+    if (diaryBox) {
+        diaryBox.addEventListener("focus", function () {
+            showMessage("Writing mode activated ⚡");
+        });
+    }
+});
+
+
+// =============================
+// vii. ALERT / PROMPT / CONFIRM
+// =============================
+
 function registerUser() {
 
     let name = prompt("Enter your name:");
 
     if (!name) {
-        alert("Name required");
+        alert("Name required!");
         return;
     }
 
-    let confirmUser = confirm("Register " + name + "?");
+    let ok = confirm("Do you want to register " + name + "?");
 
-    if (!confirmUser) return;
-
-    let regID = "IRON-" + Math.floor(Math.random() * 1000000);
-
-    alert("Registration Successful!\nID: " + regID);
-
-    openLogin();
-}
-
-
-// ---------- LOGIN ----------
-function loginUser() {
-
-    let user = document.getElementById("loginUser").value;
-
-    if (!user) {
-        alert("Enter username");
+    if (!ok) {
+        alert("Cancelled");
         return;
     }
 
-    alert("Welcome " + user);
+    let id = generateRegID();
 
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("diaryBox").style.display = "block";
+    alert("Registration successful ⚡\nYour ID: " + id);
+
+    setCookie("user", name, 7);
+    setCookie("userid", id, 7);
 }
 
 
-// ---------- DIARY ----------
-function saveDiary() {
+// =============================
+// viii. FORM VALIDATION (MIN 5 RULES)
+// =============================
 
-    let text = document.getElementById("diaryText").value;
+function validateLogin() {
 
-    if (!text) {
-        alert("Write something!");
-        return;
+    let email = document.getElementById("email");
+    let password = document.getElementById("password");
+
+    // RULE 1: empty check
+    if (!email.value || !password.value) {
+        alert("All fields required");
+        return false;
     }
 
-    let data = JSON.parse(localStorage.getItem("diary") || "[]");
+    // RULE 2: email format
+    if (!email.value.includes("@")) {
+        alert("Invalid email format");
+        return false;
+    }
 
-    data.push(text);
+    // RULE 3: password length
+    if (password.value.length < 6) {
+        alert("Password must be at least 6 characters");
+        return false;
+    }
 
-    localStorage.setItem("diary", JSON.stringify(data));
+    // RULE 4: no spaces
+    if (email.value.includes(" ")) {
+        alert("Email should not contain spaces");
+        return false;
+    }
 
-    alert("Saved ⚡");
+    // RULE 5: basic domain check
+    if (!email.value.includes(".")) {
+        alert("Invalid email domain");
+        return false;
+    }
 
-    document.getElementById("diaryText").value = "";
-}
-
-
-function showDiary() {
-
-    let data = JSON.parse(localStorage.getItem("diary") || "[]");
-
-    let output = "";
-
-    data.forEach(d => {
-        output += "<p>⚡ " + d + "</p>";
-    });
-
-    document.getElementById("entries").innerHTML = output;
+    alert("Validation successful ✔");
+    return true;
 }
