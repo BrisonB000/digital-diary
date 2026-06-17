@@ -1,19 +1,73 @@
+/* =========================
+   GLOBAL STYLES
+========================= */
+
 body{
     margin:0;
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
     background:linear-gradient(135deg,#3b0000,#7a0000,#000000);
     color:white;
     font-family:Arial;
 }
 
+/* =========================
+   LANDING PAGE CONTAINER
+========================= */
+
+.container{
+    text-align:center;
+    padding:100px 20px;
+}
+
+/* =========================
+   IRON REACTOR ANIMATION
+========================= */
+
+.reactor{
+    width:120px;
+    height:120px;
+    border:6px solid #00d9ff;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:40px;
+    color:#00d9ff;
+    margin:0 auto 20px;
+    animation: glow 2s infinite alternate;
+}
+
+@keyframes glow{
+    from{
+        box-shadow:0 0 10px #00d9ff, 0 0 20px #00d9ff;
+    }
+    to{
+        box-shadow:0 0 30px #00d9ff, 0 0 60px #00d9ff;
+    }
+}
+
+/* =========================
+   HEADINGS
+========================= */
+
+h1{
+    color:gold;
+    font-size:50px;
+    letter-spacing:3px;
+    text-shadow:0 0 10px #ffcc00;
+}
+
+/* =========================
+   TEXT
+========================= */
 
 p{
     color:#00d9ff;
-    font-size:22px;
+    font-size:20px;
 }
+
+/* =========================
+   BUTTONS
+========================= */
 
 .buttons{
     margin-top:20px;
@@ -32,60 +86,48 @@ button{
 }
 
 button:hover{
-    transform:scale(1.1);
-    box-shadow: 0 0 15px white;
+    transform:scale(1.08);
+    box-shadow:0 0 15px white;
 }
+
+/* Login button */
 button:nth-child(1){
     background:gold;
     color:black;
 }
 
+/* Register button */
 button:nth-child(2){
     background:#00d9ff;
     color:black;
 }
 
+/* =========================
+   INPUTS + TEXTAREA (LOGIN/REGISTER/DIARY)
+========================= */
 
-.reactor{
-    width:120px;
-    height:120px;
-    border:6px solid #00d9ff;
-    border-radius:50%;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    font-size:40px;
-    color:#00d9ff;
-
-    margin:0 auto;   /* ⭐ THIS FIX CENTERS IT */
-    margin-bottom:20px;
-
-    animation: glow 2s infinite alternate;
+input, textarea{
+    padding:10px;
+    margin:8px;
+    border:none;
+    border-radius:10px;
+    width:250px;
+    outline:none;
 }
 
-@keyframes glow{
-    from{
-        box-shadow:
-        0 0 10px #00d9ff,
-        0 0 20px #00d9ff;
-    }
+/* =========================
+   DIARY ENTRIES BOX
+========================= */
 
-    to{
-        box-shadow:
-        0 0 30px #00d9ff,
-        0 0 60px #00d9ff;
-    }
-}
-.container{
+#entries{
+    margin-top:20px;
     text-align:center;
-    padding:20px;
 }
 
-h1{
-    color:gold;
-    font-size:60px;
-    letter-spacing:5px;
-    text-shadow: 0 0 10px #ffcc00;
+#entries p{
+    background:rgba(255,255,255,0.1);
+    padding:10px;
+    border-radius:10px;
+    margin:10px auto;
+    width:60%;
 }

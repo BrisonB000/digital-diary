@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Diary Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>IRON DIARY DASHBOARD ⚡</h1>
+
+<p id="today"></p>
+
+<textarea id="entry" placeholder="Write your diary..." rows="5" cols="30"></textarea>
+
+<br><br>
+
+<button onclick="saveEntry()">Save</button>
+<button onclick="loadEntries()">Show Entries</button>
+
+<h3>Past Entries</h3>
+<div id="list"></div>
+
+<script type="module">
+import { supabase } from './supabase.js';
+
+// TODAY DATE
+document.getElementById("today").innerText =
+"Today: " + new Date().toDateString();
+
+// SAVE ENTRY
+window.saveEntry = async function () {
+
+    let entry = document.getElementById("entry").value;
+
+    if (!entry) {
+        alert("Write something first!");
+        return;
+    }
+
+    let { data: userData } = await supabase.auth.getUser();
+
+    let user = userData.user;
+
+    let { error } = await supabase.from("diaries").insert([
+        {
+            user_id: user.id,
+            entry: entry
+        }
+    ]);
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    alert("Saved ⚡");
+    document.getElementById("entry").value = "";
+}
+
+// LOAD ENTRIES
+window.loadEntries = async function () {
+
+    let { data: userData } = await supabase.auth.getUser();
+
+    let user = userData.user;
+
+    let { data } = await supabase
+        .from("diaries")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+    let html = "";
+
+    data.forEach(d => {
+        html += `<p>⚡ ${d.entry} <br><small>${new Date(d.created_at).toDateString()}</small></p>`;
+    });
+
+    document.getElementById("list").innerHTML = html;
+}
+
+loadEntries();
+</script>
+
+</body>
+</html>
