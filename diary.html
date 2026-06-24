@@ -42,9 +42,9 @@
 import { supabase } from './supabase.js';
 
 
-// =========================
+// 
 // i. CONTENT SLIDER
-// =========================
+// 
 
 let tips = [
     "Write daily to improve memory ⚡",
@@ -136,9 +136,9 @@ window.selectDate = function(date) {
 }
 
 loadDiaryMap();
-// =========================
+// 
 // iv. COOKIES
-// =========================
+
 
 function setCookie(name, value) {
     document.cookie = name + "=" + value;
@@ -154,9 +154,9 @@ function getCookie(name) {
 }
 
 
-// =========================
+
 // vi. EVENT (DOM LOADED)
-// =========================
+
 
 document.addEventListener("DOMContentLoaded", () => {
     alert("Welcome " + (getCookie("loggedEmail") || "User") + " ⚡");
@@ -188,7 +188,7 @@ function validateEntry(entry) {
         return false;
     }
 
-    if (entry.length > 500) {
+    if (entry.length > 5000) {
         alert("Entry too long");
         return false;
     }

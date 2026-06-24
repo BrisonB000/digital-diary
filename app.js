@@ -1,7 +1,4 @@
 
-// =============================
-// i. CONTENT SLIDER
-// =============================
 
 let messages = [
     "Welcome to Iron Diary ⚡",
@@ -24,18 +21,12 @@ function startSlider() {
 startSlider();
 
 
-// =============================
-// ii. RANDOM NUMBER (REGISTRATION ID)
-// =============================
 
 function generateRegID() {
     return "IRON-" + Math.floor(100000 + Math.random() * 900000);
 }
 
 
-// =============================
-// iii. DYNAMIC CONTENT DISPLAY
-// =============================
 
 function showMessage(msg) {
     let box = document.getElementById("dynamicBox");

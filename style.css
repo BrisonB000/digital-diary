@@ -131,3 +131,78 @@ input, textarea{
     margin:10px auto;
     width:60%;
 }
+
+/* NAVBAR */
+.navbar{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    box-sizing: border-box;
+    border-bottom: 2px solid gold;
+    z-index: 1000;
+}
+
+.logo{
+    color: gold;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px gold;
+}
+
+.nav-links a{
+    color: white;
+    text-decoration: none;
+    margin-left: 25px;
+    font-size: 18px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.nav-links a:hover{
+    color: #00d9ff;
+    text-shadow: 0 0 10px #00d9ff;
+}
+
+/* to avoid navbar covering content */
+.container{
+    margin-top: 90px;
+}
+.about-container{
+    max-width: 900px;
+    margin: 120px auto 40px;
+    background: rgba(0,0,0,0.75);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0,217,255,0.3);
+    color: white;
+    line-height: 1.8;
+}
+
+.about-container h1{
+    color: gold;
+    text-align: center;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px gold;
+}
+
+.about-container h2{
+    color: #00d9ff;
+    margin-top: 25px;
+    text-shadow: 0 0 8px #00d9ff;
+}
+
+.about-container p,
+.about-container li{
+    font-size: 18px;
+}
+
+.about-container ul{
+    padding-left: 25px;
+}
