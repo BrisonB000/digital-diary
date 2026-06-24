@@ -22,9 +22,13 @@ startSlider();
 
 
 
+
+
 function generateRegID() {
     return "IRON-" + Math.floor(100000 + Math.random() * 900000);
 }
+
+
 
 
 
@@ -41,9 +45,8 @@ function showMessage(msg) {
 }
 
 
-// =============================
-// iv. COOKIES (SAVE USER)
-// =============================
+
+
 
 function setCookie(name, value, days) {
     let date = new Date();
@@ -61,9 +64,8 @@ function getCookie(name) {
 }
 
 
-// =============================
-// v. DOM MANIPULATION (DIARY)
-// =============================
+
+
 
 function addDiaryEntry() {
     let text = document.getElementById("diaryText");
@@ -127,9 +129,10 @@ function registerUser() {
 }
 
 
-// =============================
-// viii. FORM VALIDATION (MIN 5 RULES)
-// =============================
+
+
+
+
 
 function validateLogin() {
 

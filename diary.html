@@ -27,16 +27,24 @@
 <br>
 
 <input type="date" id="selectedDate">
-
-<textarea id="entry" placeholder="Write your diary..." rows="5" cols="30"></textarea>
+<p id="viewingDate"></p>
 
 <br><br>
 
-<button onclick="saveEntry()">Save</button>
-<button onclick="loadEntries()">Show Entries</button>
+<input type="text" id="title" placeholder="Diary Title">
 
-<h3>Past Entries</h3>
-<div id="list"></div>
+<br><br>
+
+<textarea id="entry" placeholder="Write your diary..." rows="8" cols="40"></textarea>
+
+<br><br>
+
+<button onclick="enableEdit()">Edit</button>
+<button onclick="saveEntry()">Save</button>
+<button onclick="deleteEntry()">Delete</button>
+
+
+
 
 <script type="module">
 import { supabase } from './supabase.js';
@@ -67,15 +75,18 @@ setInterval(() => {
 let currentDate = new Date();
 let diaryMap = {};
 
+let selectedDateValue = new Date().toISOString().split("T")[0];
+document.getElementById("selectedDate").value = selectedDateValue;
+
 async function loadDiaryMap() {
 
     let { data: userData } = await supabase.auth.getUser();
     let user = userData.user;
 
     let { data } = await supabase
-        .from("diary_entries")
-        .select("*")
-        .eq("user_id", user.id);
+    .from("diaries")
+    .select("*")
+    .eq("user_id", user.id);
 
     diaryMap = {};
 
@@ -106,23 +117,46 @@ function renderCalendar() {
 
     for (let d = 1; d <= days; d++) {
 
-        let dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+       let dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
-        let hasEntry = diaryMap[dateStr];
+let hasEntry = diaryMap[dateStr];
+let isSelected = dateStr === selectedDateValue;
 
-        cal.innerHTML += `
-            <div onclick="selectDate('${dateStr}')"
-                style="padding:10px;
-                text-align:center;
-                border-radius:8px;
-                cursor:pointer;
-                background:${hasEntry ? '#00d9ff' : 'rgba(255,255,255,0.1)'};">
-                ${d}
-                <br>
-                ${hasEntry ? "⚡" : ""}
-            </div>
-        `;
+let bgColor = hasEntry ? "#00d9ff" : "rgba(255,255,255,0.1)";
+let borderStyle = isSelected ? "2px solid gold" : "1px solid transparent";
+let boxShadow = isSelected ? "0 0 12px gold" : "none";
+let textColor = hasEntry ? "black" : "white";
+
+cal.innerHTML += `
+    <div onclick="selectDate('${dateStr}')"
+        style="
+            padding:10px;
+            text-align:center;
+            border-radius:8px;
+            cursor:pointer;
+            background:${bgColor};
+            border:${borderStyle};
+            box-shadow:${boxShadow};
+            color:${textColor};
+            font-weight:bold;
+        ">
+        ${d}
+        <br>
+        ${hasEntry ? "⚡" : ""}
+    </div>
+`;
     }
+}
+
+function updateViewingDate(date) {
+    let formatted = new Date(date).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    });
+
+    document.getElementById("viewingDate").innerText =
+        "Viewing diary for: " + formatted;
 }
 
 window.changeMonth = function(val) {
@@ -131,11 +165,58 @@ window.changeMonth = function(val) {
 }
 
 window.selectDate = function(date) {
+    selectedDateValue = date;
     document.getElementById("selectedDate").value = date;
-    loadEntries(date);
+    updateViewingDate(date);
+    loadEntryByDate(date);
+    renderCalendar();
 }
 
+window.enableEdit = function () {
+    document.getElementById("title").readOnly = false;
+    document.getElementById("entry").readOnly = false;
+    alert("Edit mode enabled ⚡");
+};
+async function loadEntryByDate(date) {
+    let { data: userData } = await supabase.auth.getUser();
+    let user = userData.user;
+
+    let { data, error } = await supabase
+        .from("diaries")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("entry_date", date)
+        .maybeSingle();
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    if (data) {
+        document.getElementById("title").value = data.title || "";
+        document.getElementById("entry").value = data.entry || "";
+
+        document.getElementById("title").readOnly = true;
+        document.getElementById("entry").readOnly = true;
+    } else {
+        document.getElementById("title").value = "";
+        document.getElementById("entry").value = "";
+
+        document.getElementById("title").readOnly = false;
+        document.getElementById("entry").readOnly = false;
+    }
+}
 loadDiaryMap();
+
+updateViewingDate(document.getElementById("selectedDate").value);
+
+document.getElementById("selectedDate").addEventListener("change", function () {
+    selectedDateValue = this.value;
+    updateViewingDate(this.value);
+    loadEntryByDate(this.value);
+    renderCalendar();
+});
 // 
 // iv. COOKIES
 
@@ -163,18 +244,18 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// =========================
+
 // vii. ALERT / CONFIRM
-// =========================
+
 
 function confirmSave() {
     return confirm("Do you want to save this diary entry?");
 }
 
 
-// =========================
+
 // viii. VALIDATION (5 RULES)
-// =========================
+
 
 function validateEntry(entry) {
 
@@ -211,40 +292,6 @@ function validateEntry(entry) {
 // SAVE ENTRY (DOM + SUPABASE)
 // =========================
 
-window.saveEntry = async function () {
-
-    let entry = document.getElementById("entry").value;
-
-    // validation
-    if (!validateEntry(entry)) return;
-
-    // confirm
-    if (!confirmSave()) return;
-
-    let { data: userData } = await supabase.auth.getUser();
-    let user = userData.user;
-
-    let { error } = await supabase.from("diaries").insert([
-      {
-    user_id: user.id,
-    entry: entry,
-    entry_date: document.getElementById("selectedDate").value,
-    title: generateAI(entry).title,
-    emoji: generateAI(entry).emoji
-        }
-    ]);
-
-    if (error) {
-        alert(error.message);
-        return;
-    }
-
-    alert("Saved ⚡");
-
-    // DOM manipulation
-    document.getElementById("entry").value = "";
-    loadEntries();
-};
 
 function generateAI(text) {
 
@@ -263,42 +310,127 @@ function generateAI(text) {
 }
 
 
-// =========================
-// LOAD ENTRIES (DYNAMIC UI)
-// =========================
 
-window.loadEntries = async function () {
+// LOAD ENTRIES (DYNAMIC UI)
+
+window.saveEntry = async function () {
+
+    let selectedDate = document.getElementById("selectedDate").value;
+    let title = document.getElementById("title").value;
+    let entry = document.getElementById("entry").value;
+
+    // validation
+    if (!validateEntry(entry)) return;
+
+    // confirm
+    if (!confirmSave()) return;
 
     let { data: userData } = await supabase.auth.getUser();
     let user = userData.user;
 
-    let { data } = await supabase
+    // check if entry already exists for this date
+    let { data: existingEntry, error: checkError } = await supabase
         .from("diaries")
         .select("*")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+        .eq("entry_date", selectedDate)
+        .maybeSingle();
 
-    let html = "";
+    if (checkError) {
+        alert(checkError.message);
+        return;
+    }
 
-    data.forEach(d => {
-        html += `
-            <div style="background:rgba(255,255,255,0.1);
-                        margin:10px;
-                        padding:10px;
-                        border-radius:10px;">
-                ⚡ ${d.entry}
-                <br>
-                <small>${new Date(d.created_at).toDateString()}</small>
-            </div>
-        `;
-    });
+    let aiData = generateAI(entry);
 
-    document.getElementById("list").innerHTML = html;
+    if (existingEntry) {
+        // UPDATE existing diary
+        let { error } = await supabase
+            .from("diaries")
+            .update({
+                title: title || aiData.title,
+                entry: entry,
+                emoji: aiData.emoji
+            })
+            .eq("user_id", user.id)
+            .eq("entry_date", selectedDate);
+
+        if (error) {
+            alert(error.message);
+            return;
+        }
+
+        alert("Diary updated successfully ⚡");
+    } else {
+        // INSERT new diary
+        let { error } = await supabase
+            .from("diaries")
+            .insert([
+                {
+                    user_id: user.id,
+                    title: title || aiData.title,
+                    entry: entry,
+                    entry_date: selectedDate,
+                    emoji: aiData.emoji
+                }
+            ]);
+
+        if (error) {
+            alert(error.message);
+            return;
+        }
+
+        alert("Diary saved successfully ⚡");
+    }
+
+   loadDiaryMap();
+loadEntryByDate(selectedDate);
+
+
+document.getElementById("title").readOnly = true;
+document.getElementById("entry").readOnly = true;
+
+};
+window.deleteEntry = async function () {
+    let selectedDate = document.getElementById("selectedDate").value;
+
+    if (!selectedDate) {
+        alert("Please select a date first.");
+        return;
+    }
+
+    let confirmDelete = confirm("Are you sure you want to delete this diary entry?");
+    if (!confirmDelete) return;
+
+    let { data: userData } = await supabase.auth.getUser();
+    let user = userData.user;
+
+    let { error } = await supabase
+        .from("diaries")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("entry_date", selectedDate);
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    alert("Diary deleted successfully 🗑️");
+
+    document.getElementById("title").value = "";
+    document.getElementById("entry").value = "";
+    document.getElementById("title").readOnly = false;
+    document.getElementById("entry").readOnly = false;
+
+    loadDiaryMap();
+   
 };
 
 
+
 // initial load
-loadEntries();
+
 </script>
 
 </body>
